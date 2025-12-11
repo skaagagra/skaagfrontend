@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Use 10.0.2.2 for Android emulator to access localhost of the host machine.
   // Use localhost for iOS simulator or web.
-  static const String baseUrl = 'https://cdl0jxx6-8000.inc1.devtunnels.ms/api'; 
+  static const String baseUrl = 'https://skaagpay-backend.vercel.app/api'; 
   
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
@@ -21,12 +21,15 @@ class ApiService {
   }
 
   // --- Auth ---
-  Future<Map<String, dynamic>> login(String phoneNumber) async {
+  Future<Map<String, dynamic>> login(String phoneNumber, String fullName) async {
     final url = Uri.parse('$baseUrl/auth/login/');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'phone_number': phoneNumber}),
+      body: jsonEncode({
+        'phone_number': phoneNumber,
+        'full_name': fullName,
+      }),
     );
 
     if (response.statusCode == 200) {
@@ -74,22 +77,21 @@ class ApiService {
     }
   }
 
-  Future<void> requestTopUp(String amount, String imagePath) async {
+  Future<void> requestTopUp(String amount, String transactionReference) async {
     final url = Uri.parse('$baseUrl/wallet/topup/');
     final headers = await _getHeaders();
-    
-    // Multipart Request for file upload
-    var request = http.MultipartRequest('POST', url);
-    request.headers.addAll(headers);
-    request.fields['amount'] = amount;
-    
-    // Add file
-    request.files.add(await http.MultipartFile.fromPath('screenshot', imagePath));
 
-    final response = await request.send();
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode({
+        'amount': amount,
+        'transaction_reference': transactionReference,
+      }),
+    );
+
     if (response.statusCode != 200 && response.statusCode != 201) {
-       final respStr = await response.stream.bytesToString();
-       throw Exception('Top-up failed: $respStr');
+      throw Exception('Top-up failed: ${response.body}');
     }
   }
 

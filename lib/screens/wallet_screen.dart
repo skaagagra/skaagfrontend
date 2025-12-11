@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -13,23 +12,21 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   final _amountController = TextEditingController();
-  File? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+  final _referenceController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
-    }
-  }
-
   Future<void> _submitRequest() async {
-    if (_amountController.text.isEmpty || _selectedImage == null) {
+    if (_amountController.text.isEmpty || _referenceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter amount and upload screenshot')),
+        const SnackBar(content: Text('Please enter amount and transaction reference')),
+      );
+      return;
+    }
+    
+    // Validate Reference (last 4 digits)
+    if (_referenceController.text.length < 4) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transaction reference must be at least 4 digits')),
       );
       return;
     }
@@ -37,7 +34,7 @@ class _WalletScreenState extends State<WalletScreen> {
     setState(() => _isLoading = true);
     
     try {
-      await ApiService().requestTopUp(_amountController.text, _selectedImage!.path);
+      await ApiService().requestTopUp(_amountController.text, _referenceController.text);
       
       if (!mounted) return;
       showDialog(
@@ -87,7 +84,7 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Enter amount and upload verification screenshot.',
+              'Enter amount and transaction reference (last 4 digits).',
               style: GoogleFonts.outfit(color: Colors.grey),
             ),
             const SizedBox(height: 32),
@@ -98,41 +95,11 @@ class _WalletScreenState extends State<WalletScreen> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 32),
-            Text(
-              'Verify Payment',
-              style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.blueAccent.withOpacity(0.5),
-                    style: BorderStyle.values[1], // solid
-                    width: 1,
-                  ),
-                ),
-                child: _selectedImage != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.cloud_upload_outlined, size: 48, color: Colors.blueAccent),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Upload Payment Screenshot',
-                            style: GoogleFonts.outfit(color: Colors.blueAccent),
-                          ),
-                        ],
-                      ),
-              ),
+             _buildTextField(
+              controller: _referenceController,
+              label: 'Transaction Ref (Last 4 Digits)',
+              icon: Icons.numbers,
+              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 48),
             SizedBox(

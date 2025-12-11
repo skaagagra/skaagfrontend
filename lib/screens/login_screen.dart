@@ -16,6 +16,8 @@ enum LoginStep { enterPhone, confirmPhone }
 
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
+
+  final _nameController = TextEditingController();
   final _confirmPhoneController = TextEditingController();
   LoginStep _step = LoginStep.enterPhone;
   bool _isLoading = false;
@@ -24,6 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_step == LoginStep.enterPhone) {
       if (_phoneController.text.length < 10) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter valid phone number')));
+        return;
+      }
+      if (_nameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter your name')));
         return;
       }
       setState(() => _step = LoginStep.confirmPhone);
@@ -42,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ApiService().login(_phoneController.text);
+      await ApiService().login(_phoneController.text, _nameController.text);
       
       if (!mounted) return;
       
@@ -143,6 +149,13 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       key: const ValueKey('phoneInput'),
       children: [
+        _buildTextField(
+          controller: _nameController,
+          label: 'Full Name',
+          icon: Icons.person,
+          keyboardType: TextInputType.name,
+        ),
+        const SizedBox(height: 16),
         _buildTextField(
           controller: _phoneController,
           label: 'Enter Phone Number',
