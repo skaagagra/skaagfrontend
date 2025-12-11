@@ -4,10 +4,15 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/pin_screen.dart';
 import 'services/biometric_service.dart';
+import 'services/fcm_service.dart';
 import 'utils/pin_manager.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await FcmService().initialize();
+
   final bool isPinSet = await PinManager().isPinSet();
   
   Widget initialRoute = const LoginScreen();

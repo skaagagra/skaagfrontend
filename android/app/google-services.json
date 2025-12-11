@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "91244307570",
+    "project_id": "skaag-22f1e",
+    "storage_bucket": "skaag-22f1e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:91244307570:android:0b08ff190c33832f2a0eeb",
+        "android_client_info": {
+          "package_name": "com.example.skaag_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvP4dlLFJJrehrjWj-Dh35Z5r_MvC9P_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
