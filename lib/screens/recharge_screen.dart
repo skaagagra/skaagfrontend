@@ -31,7 +31,7 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialModeScheduled ? 1 : 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialModeScheduled ? 1 : 0);
   }
 
   @override
@@ -163,22 +163,26 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
           unselectedLabelColor: Colors.grey,
           labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
           tabs: const [
-            Tab(text: 'Recharge Now'),
-            Tab(text: 'Schedule'),
+            Tab(icon: Icon(Icons.phone_android), text: 'Mobile'),
+            Tab(icon: Icon(Icons.schedule), text: 'Schedule'),
+            Tab(icon: Icon(Icons.tv), text: 'DTH'),
+            Tab(icon: Icon(Icons.gas_meter), text: 'Green Gas'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildForm(isScheduled: false),
-          _buildForm(isScheduled: true),
+          _buildForm(type: 'Mobile', isScheduled: false),
+          _buildForm(type: 'Schedule', isScheduled: true),
+          _buildPlaceholder(type: 'DTH Recharge', icon: Icons.tv),
+          _buildPlaceholder(type: 'Green Gas Bill', icon: Icons.gas_meter),
         ],
       ),
     );
   }
 
-  Widget _buildForm({required bool isScheduled}) {
+  Widget _buildForm({required String type, required bool isScheduled}) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -298,6 +302,43 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
             });
           },
         ),
+      ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder({required String type, required IconData icon}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text('Enter details for $type', style: GoogleFonts.outfit(color: Colors.grey)),
+          const SizedBox(height: 16),
+          // We can reuse the same form structure later or a simplified one
+          SizedBox(
+            width: 200,
+            child: TextField(
+               style: GoogleFonts.outfit(color: Colors.white),
+               decoration: InputDecoration(
+                 hintText: 'Consumer ID / Number',
+                 hintStyle: GoogleFonts.outfit(color: Colors.grey),
+                 filled: true,
+                 fillColor: Colors.white.withOpacity(0.05),
+                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+               ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () { 
+                // Generic submit for now
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request Sent to Admin')));
+            },
+            child: const Text('Submit Request'),
+          ),
+        ],
       ),
     );
   }

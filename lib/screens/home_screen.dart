@@ -5,6 +5,8 @@ import '../services/api_service.dart';
 import 'recharge_screen.dart';
 import 'wallet_screen.dart';
 import 'profile_screen.dart';
+import 'send_money_sheet.dart';
+import 'history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _walletBalance = '...';
   List<dynamic> _transactions = [];
+  String _userName = 'User';
+  String _userId = '...';
 
   @override
   void initState() {
@@ -27,10 +31,18 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final balanceData = await ApiService().getWalletBalance();
       final txData = await ApiService().getTransactions();
+      final profile = await ApiService().getProfile();
       if (mounted) {
         setState(() {
           _walletBalance = balanceData['balance'].toString();
           _transactions = txData;
+          _userName = profile['full_name'] ?? 'User';
+          _userId = profile['user_id']?.toString() ?? '...';
+          // Fallback if user_id not in profile response directly (might vary by backend)
+          // If backend returns only 'id', use that.
+          if (_userId == '...' && profile['id'] != null) {
+             _userId = profile['id'].toString();
+          }
         });
       }
     } catch (e) {
@@ -128,7 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             ).then((_) => _fetchData());
           }
-           // Index 1 (History/Transactions) logic can go here later
+          }
+          if (index == 1) { // History
+             Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HistoryScreen()),
+            );
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -153,8 +171,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.outfit(color: Colors.grey, fontSize: 14),
               ),
               Text(
-                'User',
+                _userName,
                 style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'ID: $_userId',
+                style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12),
               ),
             ],
           ),
@@ -224,8 +246,37 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Text('Add Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
+          const SizedBox(width: 16),
+          ElevatedButton(
+            onPressed: () {
+               // Open Send Money Modal/Screen
+               _showSendMoneyDialog(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E293B), // Darker for contract
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text('Send Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          ),
+          ],
+          ), // End Row for Buttons
         ],
       ),
+    );
+  }
+
+  void _showSendMoneyDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => const SendMoneySheet(),
     );
   }
 
