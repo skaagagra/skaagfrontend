@@ -14,13 +14,11 @@ class RechargeScreen extends StatefulWidget {
   State<RechargeScreen> createState() => _RechargeScreenState();
 }
 
-class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProviderStateMixin {
+class _RechargeScreenState extends State<RechargeScreen> {
   final _mobileController = TextEditingController();
   final _amountController = TextEditingController();
   String _selectedOperator = 'Jio';
   final List<String> _operators = ['Jio', 'Airtel', 'Vi', 'BSNL'];
-  
-  late TabController _tabController;
   
   // Scheduling
   DateTime? _selectedDate;
@@ -31,12 +29,10 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTabIndex);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -149,36 +145,35 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
     }
   }
 
+  String _getTitle() {
+    switch (widget.initialTabIndex) {
+      case 0: return 'Mobile Recharge';
+      case 1: return 'Schedule Recharge';
+      case 2: return 'DTH Recharge';
+      case 3: return 'Green Gas Bill';
+      default: return 'Recharge';
+    }
+  }
+
+  Widget _getBody() {
+    switch (widget.initialTabIndex) {
+      case 0: return _buildForm(type: 'Mobile', isScheduled: false);
+      case 1: return _buildForm(type: 'Schedule', isScheduled: true);
+      case 2: return _buildPlaceholder(type: 'DTH Recharge', icon: Icons.tv);
+      case 3: return _buildPlaceholder(type: 'Green Gas Bill', icon: Icons.gas_meter);
+      default: return _buildForm(type: 'Mobile', isScheduled: false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recharge Mobile', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(_getTitle(), style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.blueAccent,
-          labelColor: Colors.blueAccent,
-          unselectedLabelColor: Colors.grey,
-          labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-          tabs: const [
-            Tab(icon: Icon(Icons.phone_android), text: 'Mobile'),
-            Tab(icon: Icon(Icons.schedule), text: 'Schedule'),
-            Tab(icon: Icon(Icons.tv), text: 'DTH'),
-            Tab(icon: Icon(Icons.gas_meter), text: 'Green Gas'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildForm(type: 'Mobile', isScheduled: false),
-          _buildForm(type: 'Schedule', isScheduled: true),
-          _buildPlaceholder(type: 'DTH Recharge', icon: Icons.tv),
-          _buildPlaceholder(type: 'Green Gas Bill', icon: Icons.gas_meter),
-        ],
-      ),
+      body: _getBody(),
     );
   }
 
