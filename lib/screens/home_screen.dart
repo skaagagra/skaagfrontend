@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             ).then((_) => _fetchData());
           }
-          }
+
           if (index == 1) { // History
              Navigator.push(
               context,
@@ -231,38 +231,44 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WalletScreen()),
-                ).then((_) => _fetchData()); // Refresh on return
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.blueAccent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text('Add Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                       Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const WalletScreen()),
+                      ).then((_) => _fetchData()); // Refresh on return
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: Text('Add Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                     // Open Send Money Modal/Screen
+                     _showSendMoneyDialog(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B), // Darker for contract
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: Text('Send Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          ElevatedButton(
-            onPressed: () {
-               // Open Send Money Modal/Screen
-               _showSendMoneyDialog(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E293B), // Darker for contract
-              foregroundColor: Colors.white,
-              side: const BorderSide(color: Colors.white24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text('Send Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-          ),
-          ],
-          ), // End Row for Buttons
         ],
       ),
     );
