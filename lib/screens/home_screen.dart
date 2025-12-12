@@ -77,31 +77,52 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Row(
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1.3,
                         children: [
-                          Expanded(
-                            child: _buildActionButton(
+                          _buildActionButton(
+                            context,
+                            'Mobile\nRecharge',
+                            Icons.phone_android,
+                            Colors.orangeAccent,
+                            () => Navigator.push(
                               context,
-                              'Recharge\nNow',
-                              Icons.bolt,
-                              Colors.orangeAccent,
-                              () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const RechargeScreen(initialModeScheduled: false)),
-                              ),
+                              MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 0)),
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildActionButton(
+                          _buildActionButton(
+                            context,
+                            'Schedule\nRecharge',
+                            Icons.schedule,
+                            Colors.purpleAccent,
+                            () => Navigator.push(
                               context,
-                              'Schedule\nRecharge',
-                              Icons.schedule,
-                              Colors.purpleAccent,
-                              () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const RechargeScreen(initialModeScheduled: true)),
-                              ),
+                              MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 1)),
+                            ),
+                          ),
+                          _buildActionButton(
+                            context,
+                            'DTH\nRecharge',
+                            Icons.tv,
+                            Colors.blueAccent,
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 2)),
+                            ),
+                          ),
+                          _buildActionButton(
+                            context,
+                            'Green Gas\nBill',
+                            Icons.gas_meter,
+                            Colors.greenAccent,
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 3)),
                             ),
                           ),
                         ],

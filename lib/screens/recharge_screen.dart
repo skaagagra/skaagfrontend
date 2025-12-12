@@ -6,9 +6,9 @@ import '../services/biometric_service.dart';
 import 'pin_screen.dart';
 
 class RechargeScreen extends StatefulWidget {
-  final bool initialModeScheduled;
+  final int initialTabIndex;
 
-  const RechargeScreen({super.key, this.initialModeScheduled = false});
+  const RechargeScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<RechargeScreen> createState() => _RechargeScreenState();
@@ -31,7 +31,7 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialModeScheduled ? 1 : 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTabIndex);
   }
 
   @override
@@ -302,7 +302,6 @@ class _RechargeScreenState extends State<RechargeScreen> with SingleTickerProvid
             });
           },
         ),
-      ),
       ),
     );
   }
