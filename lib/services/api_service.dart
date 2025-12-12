@@ -20,6 +20,11 @@ class ApiService {
     };
   }
 
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('user_id');
+  }
+
   // --- Auth ---
   Future<Map<String, dynamic>> login(String phoneNumber, String fullName) async {
     final url = Uri.parse('$baseUrl/auth/login/');

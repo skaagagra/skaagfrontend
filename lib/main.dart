@@ -8,28 +8,41 @@ import 'services/fcm_service.dart';
 import 'utils/pin_manager.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'services/api_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await FcmService().initialize();
 
-  final bool isPinSet = await PinManager().isPinSet();
-  
+  final bool isLoggedIn = await ApiService().isLoggedIn();
   Widget initialRoute = const LoginScreen();
 
-  if (isPinSet) {
-    // Try Biometric First
-    final bioService = BiometricService();
-    if (await bioService.isDeviceSupported()) {
-       bool authenticated = await bioService.authenticate(reason: 'Unlock Skaag');
-       if (authenticated) {
-         initialRoute = const HomeScreen();
-       } else {
-         initialRoute = const PinScreen(mode: PinMode.unlock);
-       }
-    } else {
-       initialRoute = const PinScreen(mode: PinMode.unlock);
-    }
+  if (isLoggedIn) {
+     final bioService = BiometricService();
+     // Authenticate using Biometric or Device PIN
+     bool authenticated = await bioService.authenticate(reason: 'Unlock Skaag');
+     
+     if (authenticated) {
+       initialRoute = const HomeScreen();
+     } else {
+       // If authentication fails (e.g. user cancels), what do we do?
+       // For now, we allows them to retry or fallback to login if strictly needed,
+       // but typically we just show the auth prompt.
+       // Here we might just stay on a "Locked" screen or retry.
+       // Let's assume if they fail device auth, they can't enter.
+       // But to be safe, let's keep it as HomeScreen if they persist past the prompt? 
+       // No, security means NO access.
+       // Simply re-prompting or showing a locked screen is better.
+       // For simplicity of this task: If auth fails, we show Login (or a Lock Screen).
+       // User asked "just ask for biometric ... and just logged in".
+       
+       // FORCE Authentication loop or exit?
+       // Using PinScreen as a fallback locker if device auth fails/unavailable logic isn't fully there.
+       // Let's trust device auth returns true. If false, maybe they cancelled.
+       // We will exit or show login.
+       initialRoute = const LoginScreen(); 
+     }
   }
   
   runApp(SkaagApp(initialRoute: initialRoute));
