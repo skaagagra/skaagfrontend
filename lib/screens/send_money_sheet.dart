@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/api_service.dart';
 
 class SendMoneySheet extends StatefulWidget {
   const SendMoneySheet({super.key});
@@ -38,22 +39,56 @@ class _SendMoneySheetState extends State<SendMoneySheet> with SingleTickerProvid
     });
   }
 
-  void _submitRequest() {
-    Navigator.pop(context);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: Text('Success', style: GoogleFonts.outfit(color: Colors.white)),
-        content: Text('Transfer Request Sent to Admin for Approval.', style: GoogleFonts.outfit(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+
+
+  Future<void> _submitRequest() async {
+    // Validate
+    if (_skaagIdController.text.isEmpty || _skaagAmountController.text.isEmpty) {
+        // Show error? For now just return or snackbar if context available
+        return;
+    }
+
+    Navigator.pop(context); // Close Sheet first
+    
+    // Show Loading or process in background? 
+    // Ideally we should keep sheet open, show loading, then close. 
+    // But since I popped it, I will show a global dialog or snackbar on the parent screen?
+    // Actually, the previous implementation successfully popped then showed dialog.
+    // Let's replicate that flow but with async API call.
+    // Since I cannot await easily after pop without tricky context handling, 
+    // I will show loading IN the sheet, then pop.
+
+  }
+  
+  Future<void> _performTransfer() async {
+      final recipient = _skaagIdController.text;
+      final amount = double.tryParse(_skaagAmountController.text) ?? 0.0;
+
+      if (recipient.isEmpty || amount <= 0) return;
+
+      try {
+        await ApiService().walletTransfer(recipient, amount, "Transfer from App");
+        
+        if (!mounted) return;
+        Navigator.pop(context); // Close sheet
+        
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1E293B),
+            title: Text('Success', style: GoogleFonts.outfit(color: Colors.white)),
+            content: Text('Transferred ₹$amount to $recipient successfully!', style: GoogleFonts.outfit(color: Colors.white70)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
+      } catch (e) {
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
   }
 
   @override
@@ -116,7 +151,7 @@ class _SendMoneySheetState extends State<SendMoneySheet> with SingleTickerProvid
                           _buildTextField(_skaagAmountController, 'Amount', Icons.currency_rupee, isNumber: true),
                           const SizedBox(height: 24),
                           ElevatedButton(
-                            onPressed: _submitRequest,
+                            onPressed: _performTransfer,
                             child: const Text('Send to Skaag User'),
                           ),
                         ]

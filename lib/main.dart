@@ -12,8 +12,12 @@ import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await FcmService().initialize();
+  try {
+    await Firebase.initializeApp();
+    await FcmService().initialize();
+  } catch (e) {
+    print("Firebase init failed (expected on Web/Windows without config): $e");
+  }
 
   final bool isLoggedIn = await ApiService().isLoggedIn();
   Widget initialRoute = const LoginScreen();

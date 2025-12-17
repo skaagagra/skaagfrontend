@@ -105,6 +105,7 @@ class ApiService {
     required String mobileNumber,
     required String operator,
     required double amount,
+    required String category,
     bool isScheduled = false,
     String? scheduledAt,
   }) async {
@@ -115,6 +116,7 @@ class ApiService {
       'mobile_number': mobileNumber,
       'operator': operator,
       'amount': amount,
+      'category': category,
       if (isScheduled) ...{
         'is_scheduled': true,
         'scheduled_at': scheduledAt, // ISO 8601 string
@@ -131,6 +133,25 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Recharge failed: ${response.body}');
+    }
+  }
+
+  Future<void> walletTransfer(String recipientId, double amount, String description) async {
+    final url = Uri.parse('$baseUrl/wallet/transfer/');
+    final headers = await _getHeaders();
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode({
+        'recipient_id': recipientId,
+        'amount': amount,
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Transfer failed: ${response.body}');
     }
   }
   // --- Profile ---

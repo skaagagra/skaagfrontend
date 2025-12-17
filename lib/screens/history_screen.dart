@@ -35,22 +35,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   IconData _getIconForTransaction(dynamic tx) {
-    // Logic to determine icon based on 'type' or description fallback
-    // Assuming 'type' field exists or we check description text
+    final String type = (tx['transaction_type'] ?? '').toString();
     final String desc = (tx['description'] ?? '').toString().toLowerCase();
     
+    if (type == 'TRANSFER_RECEIVED') return Icons.call_received;
+    if (type == 'TRANSFER_SENT') return Icons.call_made;
+    if (type == 'CREDIT') return Icons.add;
+    if (type == 'DEBIT') return Icons.remove;
+
+    // Fallback based on text
     if (desc.contains('recharge') || desc.contains('mobile')) return Icons.phone_android;
     if (desc.contains('dth')) return Icons.tv;
     if (desc.contains('gas')) return Icons.gas_meter;
     if (desc.contains('transfer') || desc.contains('send')) return Icons.send;
-    if (desc.contains('wallet') || desc.contains('topup') || desc.contains('add')) return Icons.account_balance_wallet;
     
     return Icons.receipt_long; // Default
   }
 
   Color _getColorForTransaction(dynamic tx) {
-      final String desc = (tx['description'] ?? '').toString().toLowerCase();
-       if (desc.contains('failed')) return Colors.redAccent;
+       final String type = (tx['transaction_type'] ?? '').toString();
+       
+       if (type == 'CREDIT' || type == 'TRANSFER_RECEIVED') return Colors.greenAccent;
+       if (type == 'DEBIT' || type == 'TRANSFER_SENT') return Colors.redAccent;
+
        return Colors.blueAccent;
   }
 

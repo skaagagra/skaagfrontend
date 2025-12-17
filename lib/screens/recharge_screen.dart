@@ -62,7 +62,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     }
   }
 
-  Future<void> _submitRecharge(bool isScheduled) async {
+  Future<void> _submitRecharge(bool isScheduled, String category) async {
     if (_mobileController.text.isEmpty || _amountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
@@ -111,6 +111,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
         mobileNumber: _mobileController.text,
         operator: _selectedOperator,
         amount: double.tryParse(_amountController.text) ?? 0.0,
+        category: category,
         isScheduled: isScheduled,
         scheduledAt: scheduledAt,
       );
@@ -157,11 +158,11 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
   Widget _getBody() {
     switch (widget.initialTabIndex) {
-      case 0: return _buildForm(type: 'Mobile', isScheduled: false);
-      case 1: return _buildForm(type: 'Schedule', isScheduled: true);
-      case 2: return _buildPlaceholder(type: 'DTH Recharge', icon: Icons.tv);
-      case 3: return _buildPlaceholder(type: 'Green Gas Bill', icon: Icons.gas_meter);
-      default: return _buildForm(type: 'Mobile', isScheduled: false);
+      case 0: return _buildForm(type: 'Mobile', category: 'MOBILE_PREPAID', isScheduled: false, label: 'Mobile Number', icon: Icons.phone_android);
+      case 1: return _buildForm(type: 'Schedule', category: 'MOBILE_PREPAID', isScheduled: true, label: 'Mobile Number', icon: Icons.phone_android);
+      case 2: return _buildForm(type: 'DTH Recharge', category: 'DTH', isScheduled: false, label: 'Subscriber ID', icon: Icons.tv);
+      case 3: return _buildForm(type: 'Green Gas Bill', category: 'GAS', isScheduled: false, label: 'Consumer Number', icon: Icons.gas_meter);
+      default: return _buildForm(type: 'Mobile', category: 'MOBILE_PREPAID', isScheduled: false, label: 'Mobile Number', icon: Icons.phone_android);
     }
   }
 
@@ -177,7 +178,13 @@ class _RechargeScreenState extends State<RechargeScreen> {
     );
   }
 
-  Widget _buildForm({required String type, required bool isScheduled}) {
+  Widget _buildForm({
+    required String type, 
+    required String category, 
+    required bool isScheduled,
+    required String label,
+    required IconData icon,
+  }) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -185,9 +192,9 @@ class _RechargeScreenState extends State<RechargeScreen> {
         children: [
           _buildTextField(
             controller: _mobileController,
-            label: 'Mobile Number',
-            icon: Icons.phone_android,
-            keyboardType: TextInputType.phone,
+            label: label,
+            icon: icon,
+            keyboardType: TextInputType.text, // Changed to text to support alphanumeric IDs
           ),
           const SizedBox(height: 16),
           _buildDropdown(),
@@ -232,7 +239,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
           SizedBox(
             height: 56,
             child: ElevatedButton(
-              onPressed: _isLoading ? null : () => _submitRecharge(isScheduled),
+              onPressed: _isLoading ? null : () => _submitRecharge(isScheduled, category),
               style: ElevatedButton.styleFrom(
                 backgroundColor: isScheduled ? Colors.purpleAccent : Colors.orangeAccent,
                 foregroundColor: Colors.white,
