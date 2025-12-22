@@ -137,7 +137,7 @@ class ApiService {
   }
 
   Future<void> walletTransfer(String recipientId, double amount, String description) async {
-    final url = Uri.parse('$baseUrl/wallet/transfer/');
+    final url = Uri.parse('$baseUrl/wallet/transactions/transfer/');
     final headers = await _getHeaders();
 
     final response = await http.post(
