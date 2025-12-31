@@ -26,7 +26,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     {'name': 'Sun TV', 'category': 'DTH'},
     {'name': 'Tata Sky', 'category': 'DTH'},
     {'name': 'Videocon', 'category': 'DTH'},
-    {'name': 'Green Gas agra', 'category': 'GAS', 'is_default': true},
+    {'name': 'Green Gas Agra', 'category': 'GAS', 'is_default': true},
   ];
   
   // Scheduling
@@ -42,14 +42,19 @@ class _RechargeScreenState extends State<RechargeScreen> {
   }
 
   void _initializeOperators() {
-    if (widget.initialTabIndex == 2 || widget.initialTabIndex == 3) {
-      // DTH or Gas
-      _operators = _dthOperatorsData.map((e) => e['name'] as String).toList();
-      final defaultOp = _dthOperatorsData.firstWhere(
-        (e) => e['is_default'] == true,
-        orElse: () => _dthOperatorsData.first,
-      );
-      _selectedOperator = defaultOp['name'];
+    if (widget.initialTabIndex == 2) {
+      // DTH Only
+      _operators = _dthOperatorsData
+          .where((e) => e['category'] == 'DTH')
+          .map((e) => e['name'] as String)
+          .toList();
+      _selectedOperator = _operators.isNotEmpty ? _operators.first : 'Airtel TV';
+      
+    } else if (widget.initialTabIndex == 3) {
+      // Gas Only
+      _operators = ['Green Gas Agra'];
+      _selectedOperator = 'Green Gas Agra';
+      
     } else {
       // Mobile
       _operators = ['Jio', 'Airtel', 'Vi', 'BSNL'];
@@ -76,17 +81,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
-  }
+
 
   Future<void> _submitRecharge(bool isScheduled, String category) async {
     if (_mobileController.text.isEmpty || _amountController.text.isEmpty) {
@@ -94,18 +89,35 @@ class _RechargeScreenState extends State<RechargeScreen> {
       return;
     }
 
+    // Mobile Validation
+    if (category == 'MOBILE_PREPAID') {
+        if (!RegExp(r'^[0-9]{10}$').hasMatch(_mobileController.text)) {
+             showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFF1E293B),
+                  title: Text('Invalid Number', style: GoogleFonts.outfit(color: Colors.redAccent)),
+                  content: Text('Please enter a valid 10-digit mobile number.', style: GoogleFonts.outfit(color: Colors.white70)),
+                  actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+                ),
+             );
+             return;
+        }
+    }
+
     String? scheduledAt;
     if (isScheduled) {
-      if (_selectedDate == null || _selectedTime == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select date and time')));
+      if (_selectedDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select date')));
         return;
       }
+      // Default to 10:00 AM
       final dt = DateTime(
         _selectedDate!.year,
         _selectedDate!.month,
         _selectedDate!.day,
-        _selectedTime!.hour,
-        _selectedTime!.minute,
+        10, // Default Hour
+        0,  // Default Minute
       );
       scheduledAt = dt.toIso8601String();
     }
@@ -184,11 +196,11 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
   Widget _getBody() {
     switch (widget.initialTabIndex) {
-      case 0: return _buildForm(type: 'Mobile', category: 'MOBILE_PREPAID', isScheduled: false, label: 'Mobile Number', icon: Icons.phone_android);
-      case 1: return _buildForm(type: 'Schedule', category: 'MOBILE_PREPAID', isScheduled: true, label: 'Mobile Number', icon: Icons.phone_android);
-      case 2: return _buildForm(type: 'DTH Recharge', category: 'DTH', isScheduled: false, label: 'Subscriber ID', icon: Icons.tv);
-      case 3: return _buildForm(type: 'Green Gas Bill', category: 'GAS', isScheduled: false, label: 'Consumer Number', icon: Icons.gas_meter);
-      default: return _buildForm(type: 'Mobile', category: 'MOBILE_PREPAID', isScheduled: false, label: 'Mobile Number', icon: Icons.phone_android);
+      case 0: return _buildForm(type: 'Mobile', category: 'MOBILE_PREPAID', isScheduled: false, label: 'Mobile Number', icon: Icons.phone_android, isNumeric: true);
+      case 1: return _buildForm(type: 'Schedule', category: 'MOBILE_PREPAID', isScheduled: true, label: 'Mobile Number', icon: Icons.phone_android, isNumeric: true);
+      case 2: return _buildForm(type: 'DTH Recharge', category: 'DTH', isScheduled: false, label: 'Subscriber ID', icon: Icons.tv, isNumeric: false);
+      case 3: return _buildForm(type: 'Green Gas Bill', category: 'GAS', isScheduled: false, label: 'Consumer Number', icon: Icons.gas_meter, isNumeric: false);
+      default: return _buildForm(type: 'Mobile', category: 'MOBILE_PREPAID', isScheduled: false, label: 'Mobile Number', icon: Icons.phone_android, isNumeric: true);
     }
   }
 
@@ -210,6 +222,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     required bool isScheduled,
     required String label,
     required IconData icon,
+    required bool isNumeric,
   }) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -220,10 +233,13 @@ class _RechargeScreenState extends State<RechargeScreen> {
             controller: _mobileController,
             label: label,
             icon: icon,
-            keyboardType: TextInputType.text, // Changed to text to support alphanumeric IDs
+            keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
           ),
           const SizedBox(height: 16),
-          _buildDropdown(),
+          const SizedBox(height: 16),
+          category == 'GAS' 
+            ? _buildStaticOperator('Green Gas Agra') 
+            : _buildDropdown(),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _amountController,
@@ -243,17 +259,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
                     icon: const Icon(Icons.calendar_today),
                     label: Text(
                       _selectedDate == null ? 'Select Date' : DateFormat.yMMMd().format(_selectedDate!),
-                      style: GoogleFonts.outfit(color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _selectTime(context),
-                    icon: const Icon(Icons.access_time),
-                    label: Text(
-                      _selectedTime == null ? 'Select Time' : _selectedTime!.format(context),
                       style: GoogleFonts.outfit(color: Colors.white),
                     ),
                   ),
@@ -366,6 +371,21 @@ class _RechargeScreenState extends State<RechargeScreen> {
             child: const Text('Submit Request'),
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildStaticOperator(String name) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Text(
+        name,
+        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
       ),
     );
   }

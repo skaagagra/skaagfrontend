@@ -181,29 +181,35 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildAppBar() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Welcome back,',
-                style: GoogleFonts.outfit(color: Colors.grey, fontSize: 14),
+              Image.asset(
+                'assets/images/logo_dark_mode.png',
+                height: 48, // Balanced size
+                fit: BoxFit.contain,
               ),
-              Text(
-                _userName,
-                style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'ID: $_userId',
-                style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12),
+              CircleAvatar(
+                backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                child: const Icon(Icons.notifications_none, color: Colors.blueAccent),
               ),
             ],
           ),
-          CircleAvatar(
-            backgroundColor: Colors.blueAccent.withOpacity(0.2),
-            child: const Icon(Icons.notifications_none, color: Colors.blueAccent),
+          const SizedBox(height: 24),
+          Text(
+            'Welcome back,',
+            style: GoogleFonts.outfit(color: Colors.grey, fontSize: 14),
+          ),
+          Text(
+            _userName,
+            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            'ID: $_userId',
+            style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),
