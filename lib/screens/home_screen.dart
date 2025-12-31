@@ -271,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text('Add Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
                 ),
               ),
+              /*
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
@@ -288,6 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text('Send Money', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
                 ),
               ),
+              */
             ],
           ),
         ],
