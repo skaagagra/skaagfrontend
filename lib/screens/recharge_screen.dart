@@ -18,7 +18,16 @@ class _RechargeScreenState extends State<RechargeScreen> {
   final _mobileController = TextEditingController();
   final _amountController = TextEditingController();
   String _selectedOperator = 'Jio';
-  final List<String> _operators = ['Jio', 'Airtel', 'Vi', 'BSNL'];
+  List<String> _operators = [];
+
+  final List<Map<String, dynamic>> _dthOperatorsData = [
+    {'name': 'Airtel TV', 'category': 'DTH'},
+    {'name': 'Dish TV', 'category': 'DTH'},
+    {'name': 'Sun TV', 'category': 'DTH'},
+    {'name': 'Tata Sky', 'category': 'DTH'},
+    {'name': 'Videocon', 'category': 'DTH'},
+    {'name': 'Green Gas agra', 'category': 'GAS', 'is_default': true},
+  ];
   
   // Scheduling
   DateTime? _selectedDate;
@@ -29,6 +38,23 @@ class _RechargeScreenState extends State<RechargeScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeOperators();
+  }
+
+  void _initializeOperators() {
+    if (widget.initialTabIndex == 2 || widget.initialTabIndex == 3) {
+      // DTH or Gas
+      _operators = _dthOperatorsData.map((e) => e['name'] as String).toList();
+      final defaultOp = _dthOperatorsData.firstWhere(
+        (e) => e['is_default'] == true,
+        orElse: () => _dthOperatorsData.first,
+      );
+      _selectedOperator = defaultOp['name'];
+    } else {
+      // Mobile
+      _operators = ['Jio', 'Airtel', 'Vi', 'BSNL'];
+      _selectedOperator = _operators.first;
+    }
   }
 
   @override
