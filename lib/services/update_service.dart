@@ -21,22 +21,37 @@ class UpdateService {
       int currentVersionCode = int.parse(packageInfo.buildNumber);
 
       // 2. Get latest version from backend
-      final response = await _dio.get('${ApiService.baseUrl}/app/latest/');
+      final String updateUrl = '${ApiService.baseUrl}/app/latest/';
+      debugPrint('Checking for updates at: $updateUrl');
+      debugPrint('Current version code: $currentVersionCode');
+      
+      final response = await _dio.get(updateUrl);
       if (response.statusCode == 200) {
         final data = response.data;
-        int latestVersionCode = data['version_code'];
-        String latestVersionName = data['version_name'];
-        String apkUrl = data['apk_url'];
+        int latestVersionCode = data['version_code'] ?? 0;
+        debugPrint('Latest version code from server: $latestVersionCode');
+        
+        if (latestVersionCode <= currentVersionCode) {
+          debugPrint('App is up to date.');
+          return;
+        }
+
+        String latestVersionName = data['version_name'] ?? '1.0.0';
+        String? apkUrl = data['apk_url'];
+        if (apkUrl == null || apkUrl.isEmpty) {
+          debugPrint('New version available but APK URL is missing.');
+          return;
+        }
+        
         bool isForceUpdate = data['is_force_update'] ?? false;
         String releaseNotes = data['release_notes'] ?? 'New version available';
 
-        // 3. Compare versions
-        if (latestVersionCode > currentVersionCode) {
-          _showUpdateDialog(context, latestVersionName, apkUrl, isForceUpdate, releaseNotes);
-        }
+        debugPrint('New version found: $latestVersionName ($latestVersionCode)');
+        _showUpdateDialog(context, latestVersionName, apkUrl, isForceUpdate, releaseNotes);
       }
     } catch (e) {
-      debugPrint('Error checking for updates: $e');
+      // Be silent during background check to avoid annoying the user
+      debugPrint('Silent update check failed (likely no network or old server): $e');
     }
   }
 
