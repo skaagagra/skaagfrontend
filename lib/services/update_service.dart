@@ -21,37 +21,40 @@ class UpdateService {
       int currentVersionCode = int.parse(packageInfo.buildNumber);
 
       // 2. Get latest version from backend
+      // Use local IP for testing if needed, or stick to ApiService.baseUrl
       final String updateUrl = '${ApiService.baseUrl}/app/latest/';
-      debugPrint('Checking for updates at: $updateUrl');
-      debugPrint('Current version code: $currentVersionCode');
+      debugPrint('UpdateCheck: Checking at $updateUrl');
+      debugPrint('UpdateCheck: Current build number is $currentVersionCode');
       
       final response = await _dio.get(updateUrl);
       if (response.statusCode == 200) {
         final data = response.data;
         int latestVersionCode = data['version_code'] ?? 0;
-        debugPrint('Latest version code from server: $latestVersionCode');
+        debugPrint('UpdateCheck: Latest build number on server is $latestVersionCode');
         
-        if (latestVersionCode <= currentVersionCode) {
-          debugPrint('App is up to date.');
-          return;
-        }
+        // CRITICAL: Only proceed if server has a HIGHER version code
+        if (latestVersionCode > currentVersionCode) {
+          String latestVersionName = data['version_name'] ?? '1.0.0';
+          String? apkUrl = data['apk_url'];
+          
+          if (apkUrl == null || apkUrl.isEmpty) {
+            debugPrint('UpdateCheck: New version found but APK URL is empty. Skipping.');
+            return;
+          }
+          
+          bool isForceUpdate = data['is_force_update'] ?? false;
+          String releaseNotes = data['release_notes'] ?? 'New version available';
 
-        String latestVersionName = data['version_name'] ?? '1.0.0';
-        String? apkUrl = data['apk_url'];
-        if (apkUrl == null || apkUrl.isEmpty) {
-          debugPrint('New version available but APK URL is missing.');
-          return;
+          debugPrint('UpdateCheck: Triggering update dialog for $latestVersionName');
+          if (context.mounted) {
+            _showUpdateDialog(context, latestVersionName, apkUrl, isForceUpdate, releaseNotes);
+          }
+        } else {
+          debugPrint('UpdateCheck: App is up to date ($currentVersionCode >= $latestVersionCode)');
         }
-        
-        bool isForceUpdate = data['is_force_update'] ?? false;
-        String releaseNotes = data['release_notes'] ?? 'New version available';
-
-        debugPrint('New version found: $latestVersionName ($latestVersionCode)');
-        _showUpdateDialog(context, latestVersionName, apkUrl, isForceUpdate, releaseNotes);
       }
     } catch (e) {
-      // Be silent during background check to avoid annoying the user
-      debugPrint('Silent update check failed (likely no network or old server): $e');
+      debugPrint('UpdateCheck: Silent failure (network or server issue): $e');
     }
   }
 
@@ -59,18 +62,27 @@ class UpdateService {
     showDialog(
       context: context,
       barrierDismissible: !isForceUpdate,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => !isForceUpdate,
+      builder: (context) => PopScope(
+        canPop: !isForceUpdate,
         child: AlertDialog(
           title: Text('Update Available ($versionName)'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('A new version of the app is available. Please update to continue.'),
-              const SizedBox(height: 10),
-              Text('Release Notes:', style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(releaseNotes),
+              Text(
+                isForceUpdate 
+                  ? 'A critical update is required to continue using the app.' 
+                  : 'A new version is available. Update now to get the latest features.',
+              ),
+              const SizedBox(height: 12),
+              Text('What\'s New:', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 4),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Text(releaseNotes, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                ),
+              ),
             ],
           ),
           actions: [
@@ -80,6 +92,10 @@ class UpdateService {
                 child: const Text('Later'),
               ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+              ),
               onPressed: () {
                 _downloadAndInstallApk(context, apkUrl);
               },
