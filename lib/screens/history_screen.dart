@@ -53,12 +53,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Color _getColorForTransaction(dynamic tx) {
-       final String type = (tx['transaction_type'] ?? '').toString();
-       
-       if (type == 'CREDIT' || type == 'TRANSFER_RECEIVED') return Colors.greenAccent;
-       if (type == 'DEBIT' || type == 'TRANSFER_SENT') return Colors.redAccent;
+    final String type = (tx['transaction_type'] ?? '').toString();
+    if (type == 'CREDIT' || type == 'TRANSFER_RECEIVED') return Colors.greenAccent;
+    if (type == 'DEBIT' || type == 'TRANSFER_SENT') return Colors.redAccent;
+    return Colors.blueAccent;
+  }
 
-       return Colors.blueAccent;
+  Color _getStatusColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'SUCCESS':
+      case 'APPROVED':
+        return Colors.green;
+      case 'PENDING':
+      case 'PROCESSING':
+        return Colors.orange;
+      case 'FAILED':
+      case 'REJECTED':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
@@ -74,26 +88,90 @@ class _HistoryScreenState extends State<HistoryScreen> {
           : _transactions.isEmpty
               ? Center(child: Text('No transactions found', style: GoogleFonts.outfit(color: Colors.grey)))
               : ListView.builder(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   itemCount: _transactions.length,
                   itemBuilder: (context, index) {
                     final tx = _transactions[index];
                     final String title = tx['description'] ?? 'Transaction';
-                    final String amount = '₹ ${tx['amount'] ?? 0}';
+                    final String amount = '₹${tx['amount'] ?? 0}';
                     final DateTime date = DateTime.tryParse(tx['created_at'] ?? '') ?? DateTime.now();
-                    
-                    return Card(
-                      color: const Color(0xFF1E293B),
+                    final String status = tx['status'] ?? 'SUCCESS';
+                    final String? logoUrl = tx['operator_logo'];
+                    final String? opName = tx['operator_name'];
+
+                    return Container(
                       margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.05)),
+                      ),
                       child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: _getColorForTransaction(tx).withOpacity(0.1),
-                          child: Icon(_getIconForTransaction(tx), color: _getColorForTransaction(tx)),
+                        contentPadding: const EdgeInsets.all(12),
+                        leading: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: logoUrl != null ? Colors.white : _getColorForTransaction(tx).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: logoUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(25),
+                                  child: Image.network(
+                                    logoUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Icon(_getIconForTransaction(tx), color: _getColorForTransaction(tx)),
+                                  ),
+                                )
+                              : Icon(_getIconForTransaction(tx), color: _getColorForTransaction(tx)),
                         ),
-                        title: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
-                        subtitle: Text(DateFormat.yMMMd().add_jm().format(date), style: GoogleFonts.outfit(color: Colors.grey)),
-                        trailing: Text(amount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                opName ?? title,
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              amount,
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: _getColorForTransaction(tx),
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateFormat('dd MMM, hh:mm a').format(date),
+                                style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(status).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  status,
+                                  style: GoogleFonts.outfit(
+                                    color: _getStatusColor(status),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
+import '../services/update_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,6 +20,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
+    // 0. Check for updates
+    await UpdateService().checkForUpdates(context);
+
     // 1. Check Login
     final apiService = ApiService();
     final bool isLoggedIn = await apiService.isLoggedIn();

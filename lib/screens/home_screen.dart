@@ -380,39 +380,86 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   Widget _buildTransactionItem(dynamic tx) {
-      // Assuming tx has 'description', 'amount', 'created_at' keys based on typical Django API
-      // Adjust keys based on actual API response structure if needed.
-      final String title = tx['description'] ?? 'Transaction';
-      final String amount = '₹ ${tx['amount'] ?? 0}';
-      final DateTime date = DateTime.tryParse(tx['created_at'] ?? '') ?? DateTime.now();
+    final String title = tx['description'] ?? 'Transaction';
+    final String amount = '₹${tx['amount'] ?? 0}';
+    final DateTime date = DateTime.tryParse(tx['created_at'] ?? '') ?? DateTime.now();
+    final String status = tx['status'] ?? 'SUCCESS';
+    final String? logoUrl = tx['operator_logo'];
+    final String? opName = tx['operator_name'];
 
-      return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-           decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-            children: [
-                Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle),
-                    child: const Icon(Icons.receipt_long, color: Colors.grey, size: 20),
+    Color statusColor = Colors.green;
+    if (status.toUpperCase() == 'PENDING' || status.toUpperCase() == 'PROCESSING') {
+      statusColor = Colors.orange;
+    } else if (status.toUpperCase() == 'FAILED' || status.toUpperCase() == 'REJECTED') {
+      statusColor = Colors.red;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: logoUrl != null ? Colors.white : Colors.white.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: logoUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: Image.network(
+                      logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.receipt_long, color: Colors.grey, size: 20),
+                    ),
+                  )
+                : const Icon(Icons.receipt_long, color: Colors.grey, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  opName ?? title,
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                            Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text(DateFormat.MMMd().format(date), style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12)),
-                        ]
-                    )
+                Row(
+                  children: [
+                    Text(
+                      DateFormat('dd MMM').format(date),
+                      style: GoogleFonts.outfit(color: Colors.grey, fontSize: 11),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      status,
+                      style: GoogleFonts.outfit(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
-                 Text(amount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-            ]
-        )
-      );
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ],
+      ),
+    );
   }
 }
