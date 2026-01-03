@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 import 'screens/pin_screen.dart';
 import 'services/biometric_service.dart';
 import 'services/fcm_service.dart';
@@ -28,7 +29,7 @@ void main() async {
      bool authenticated = await bioService.authenticate(reason: 'Unlock Skaag');
      
      if (authenticated) {
-       initialRoute = const HomeScreen();
+       initialRoute = const SplashScreen();
      } else {
        // If authentication fails (e.g. user cancels), what do we do?
        // For now, we allows them to retry or fallback to login if strictly needed,

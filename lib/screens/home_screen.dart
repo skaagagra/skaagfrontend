@@ -9,7 +9,16 @@ import 'send_money_sheet.dart';
 import 'history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Map<String, dynamic>? preloadedProfile;
+  final Map<String, dynamic>? preloadedWallet;
+  final List<dynamic>? preloadedTransactions;
+
+  const HomeScreen({
+    super.key, 
+    this.preloadedProfile,
+    this.preloadedWallet,
+    this.preloadedTransactions,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,7 +33,32 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _initializeData();
+  }
+  
+  void _initializeData() {
+    if (widget.preloadedProfile != null) {
+      _processProfile(widget.preloadedProfile!);
+    }
+    if (widget.preloadedWallet != null) {
+      _walletBalance = widget.preloadedWallet!['balance'].toString();
+    }
+    if (widget.preloadedTransactions != null) {
+      _transactions = widget.preloadedTransactions!;
+    }
+    
+    // If anything missing, fetch
+    if (widget.preloadedProfile == null || widget.preloadedWallet == null) {
+        _fetchData();
+    }
+  }
+
+  void _processProfile(Map<String, dynamic> profile) {
+      _userName = profile['full_name'] ?? 'User';
+      _userId = profile['user_id']?.toString() ?? '...';
+      if (_userId == '...' && profile['id'] != null) {
+         _userId = profile['id'].toString();
+      }
   }
 
   Future<void> _fetchData() async {
@@ -36,13 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _walletBalance = balanceData['balance'].toString();
           _transactions = txData;
-          _userName = profile['full_name'] ?? 'User';
-          _userId = profile['user_id']?.toString() ?? '...';
-          // Fallback if user_id not in profile response directly (might vary by backend)
-          // If backend returns only 'id', use that.
-          if (_userId == '...' && profile['id'] != null) {
-             _userId = profile['id'].toString();
-          }
+          _processProfile(profile);
         });
       }
     } catch (e) {
@@ -93,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 0)),
-                            ),
+                            ).then((_) => _fetchData()),
                           ),
                           _buildActionButton(
                             context,
@@ -103,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 1)),
-                            ),
+                            ).then((_) => _fetchData()),
                           ),
                           _buildActionButton(
                             context,
@@ -113,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 2)),
-                            ),
+                            ).then((_) => _fetchData()),
                           ),
                           _buildActionButton(
                             context,
@@ -123,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 3)),
-                            ),
+                            ).then((_) => _fetchData()),
                           ),
                         ],
                       ),

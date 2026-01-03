@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/operator.dart';
+import '../models/recharge_plan.dart';
 
 class ApiService {
   // Use 10.0.2.2 for Android emulator to access localhost of the host machine.
@@ -55,8 +57,6 @@ class ApiService {
 
   // --- Wallet ---
   Future<Map<String, dynamic>> getWalletBalance() async {
-    // Note: Endpoint from README is /api/wallet/balance/
-    // Assuming it requires GET and returns balance info
     final url = Uri.parse('$baseUrl/wallet/balance/');
     final headers = await _getHeaders();
     final response = await http.get(url, headers: headers);
@@ -74,10 +74,8 @@ class ApiService {
     final response = await http.get(url, headers: headers);
 
     if (response.statusCode == 200) {
-      // Assuming response is a list or contains a list
       return jsonDecode(response.body) as List<dynamic>;
     } else {
-       // Return empty list on failure or handle proper error parsing depending on API
       return []; 
     }
   }
@@ -100,7 +98,41 @@ class ApiService {
     }
   }
 
-  // --- Recharge ---
+  // --- Recharge & Plans ---
+  
+  Future<List<Operator>> getOperators({String? category}) async {
+    final uri = Uri.parse('$baseUrl/recharge/operators/').replace(
+      queryParameters: category != null ? {'category': category} : null
+    );
+    final headers = await _getHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Operator.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load operators');
+    }
+  }
+
+  Future<List<RechargePlan>> getPlans({int? operatorId, String? circle}) async {
+    final params = {
+      if (operatorId != null) 'operator_id': operatorId.toString(),
+      if (circle != null) 'circle': circle,
+    };
+    final uri = Uri.parse('$baseUrl/recharge/plans/').replace(queryParameters: params);
+    
+    final headers = await _getHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => RechargePlan.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load plans');
+    }
+  }
+
   Future<Map<String, dynamic>> submitRecharge({
     required String mobileNumber,
     required String operator,
@@ -119,7 +151,7 @@ class ApiService {
       'category': category,
       if (isScheduled) ...{
         'is_scheduled': true,
-        'scheduled_at': scheduledAt, // ISO 8601 string
+        'scheduled_at': scheduledAt, 
       }
     };
 
