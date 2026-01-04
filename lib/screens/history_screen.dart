@@ -100,6 +100,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     final String? opName = tx['operator_name'];
 
                     final String? targetNumber = tx['target_number'];
+                    final String? targetName = tx['target_name'];
 
                     String displayStatus = status.toUpperCase();
                     if (displayStatus == 'PENDING' || displayStatus == 'PROCESSING') {
@@ -144,10 +145,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  if (targetNumber != null)
+                                  if (targetName != null || targetNumber != null)
                                     Text(
-                                      targetNumber,
+                                      targetName != null ? '$targetName ${targetNumber != null ? "($targetNumber)" : ""}' : (targetNumber ?? ""),
                                       style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                 ],
                               ),

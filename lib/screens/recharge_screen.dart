@@ -19,6 +19,7 @@ class RechargeScreen extends StatefulWidget {
 class _RechargeScreenState extends State<RechargeScreen> {
   final _mobileController = TextEditingController();
   final _amountController = TextEditingController();
+  final _nameController = TextEditingController();
   
   Operator? _selectedOperator;
   List<Operator> _operators = [];
@@ -43,6 +44,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
   void dispose() {
     _mobileController.dispose();
     _amountController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -133,6 +135,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
         operator: _selectedOperator!.name,
         amount: double.tryParse(_amountController.text) ?? 0.0,
         category: category,
+        customerName: _nameController.text.isNotEmpty ? _nameController.text : null,
         isScheduled: _isScheduled,
         scheduledAt: scheduledAt,
       );
@@ -200,7 +203,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
       isNumeric = false;
       category = 'DTH';
     } else if (_currentTabIndex == 3) {
-      label = 'Consumer Number';
+      label = 'CRN Number';
       icon = Icons.gas_meter;
       isNumeric = false;
       category = 'GAS';
@@ -240,6 +243,15 @@ class _RechargeScreenState extends State<RechargeScreen> {
             icon: icon, 
             keyboardType: isNumeric ? TextInputType.number : TextInputType.text
           ),
+          if (_currentTabIndex == 2 || _currentTabIndex == 3) ...[
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _nameController,
+              label: 'Consumer Name',
+              icon: Icons.person_outline,
+              keyboardType: TextInputType.text,
+            ),
+          ],
           const SizedBox(height: 16),
           _buildOperatorDropdown(),
           const SizedBox(height: 16),

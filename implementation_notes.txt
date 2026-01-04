@@ -1,0 +1,14 @@
+
+// Step 1: UI components
+- Image.asset('assets/images/payment_qr.jpg')
+- Text('UPI ID: skaagagra@oksbi')
+- Text('Bank: SBI')
+- Text('Account: 30442019200')
+- Text('IFSC: SBIN0001931')
+- ElevatedButton('Open UPI App')
+
+// Step 2: Form
+- Amount TextField
+- Reference TextField
+- Submit Button
+- Back Button

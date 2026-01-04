@@ -138,6 +138,7 @@ class ApiService {
     required String operator,
     required double amount,
     required String category,
+    String? customerName,
     bool isScheduled = false,
     String? scheduledAt,
   }) async {
@@ -149,6 +150,7 @@ class ApiService {
       'operator': operator,
       'amount': amount,
       'category': category,
+      'costumer_name': customerName,
       if (isScheduled) ...{
         'is_scheduled': true,
         'scheduled_at': scheduledAt, 

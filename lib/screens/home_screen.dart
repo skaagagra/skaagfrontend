@@ -387,6 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final String? logoUrl = tx['operator_logo'];
     final String? opName = tx['operator_name'];
     final String? targetNumber = tx['target_number'];
+    final String? targetName = tx['target_name'];
 
     Color statusColor = Colors.green;
     String displayStatus = status.toUpperCase();
@@ -436,10 +437,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (targetNumber != null)
+                if (targetName != null || targetNumber != null)
                   Text(
-                    targetNumber,
+                    targetName != null ? '$targetName ${targetNumber != null ? "($targetNumber)" : ""}' : (targetNumber ?? ""),
                     style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 Row(
                   children: [
