@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
+import '../widgets/success_animation.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -37,22 +38,17 @@ class _WalletScreenState extends State<WalletScreen> {
       await ApiService().requestTopUp(_amountController.text, _referenceController.text);
       
       if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF1E293B),
-          title: Text('Request Submitted', style: GoogleFonts.outfit(color: Colors.white)),
-          content: Text('Your wallet top-up request has been sent for admin approval.',
-              style: GoogleFonts.outfit(color: Colors.white70)),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // close dialog
-                Navigator.pop(context); // close screen
-              },
-              child: Text('OK', style: GoogleFonts.outfit(color: Colors.blueAccent)),
-            ),
-          ],
+      
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          opaque: false,
+          pageBuilder: (_, __, ___) => SuccessAnimation(
+            message: 'Dear customer, your request has been successfully submitted.',
+            onFinished: () {
+              Navigator.of(context).pop(); // Back to Home
+            },
+          ),
         ),
       );
     } catch (e) {

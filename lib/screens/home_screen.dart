@@ -125,16 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           _buildActionButton(
                             context,
-                            'Schedule\nRecharge',
-                            Icons.schedule,
-                            Colors.purpleAccent,
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 1)),
-                            ).then((_) => _fetchData()),
-                          ),
-                          _buildActionButton(
-                            context,
                             'DTH\nRecharge',
                             Icons.tv,
                             Colors.blueAccent,
@@ -151,6 +141,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const RechargeScreen(initialTabIndex: 3)),
+                            ).then((_) => _fetchData()),
+                          ),
+                          _buildActionButton(
+                            context,
+                            'Wallet\nHistory',
+                            Icons.receipt_long,
+                            Colors.purpleAccent,
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const HistoryScreen()),
                             ).then((_) => _fetchData()),
                           ),
                         ],
@@ -386,11 +386,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final String status = tx['status'] ?? 'SUCCESS';
     final String? logoUrl = tx['operator_logo'];
     final String? opName = tx['operator_name'];
+    final String? targetNumber = tx['target_number'];
 
     Color statusColor = Colors.green;
-    if (status.toUpperCase() == 'PENDING' || status.toUpperCase() == 'PROCESSING') {
+    String displayStatus = status.toUpperCase();
+    
+    if (displayStatus == 'PENDING' || displayStatus == 'PROCESSING') {
       statusColor = Colors.orange;
-    } else if (status.toUpperCase() == 'FAILED' || status.toUpperCase() == 'REJECTED') {
+      displayStatus = 'PROCESSING';
+    } else if (displayStatus == 'FAILED' || displayStatus == 'REJECTED') {
       statusColor = Colors.red;
     }
 
@@ -432,6 +436,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (targetNumber != null)
+                  Text(
+                    targetNumber,
+                    style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+                  ),
                 Row(
                   children: [
                     Text(
@@ -446,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      status,
+                      displayStatus,
                       style: GoogleFonts.outfit(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600),
                     ),
                   ],

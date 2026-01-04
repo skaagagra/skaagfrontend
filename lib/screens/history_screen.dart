@@ -99,6 +99,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     final String? logoUrl = tx['operator_logo'];
                     final String? opName = tx['operator_name'];
 
+                    final String? targetNumber = tx['target_number'];
+
+                    String displayStatus = status.toUpperCase();
+                    if (displayStatus == 'PENDING' || displayStatus == 'PROCESSING') {
+                      displayStatus = 'PROCESSING';
+                    }
+
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
@@ -129,10 +136,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         title: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                opName ?? title,
-                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    opName ?? title,
+                                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (targetNumber != null)
+                                    Text(
+                                      targetNumber,
+                                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                                    ),
+                                ],
                               ),
                             ),
                             Text(
@@ -161,7 +178,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  status,
+                                  displayStatus,
                                   style: GoogleFonts.outfit(
                                     color: _getStatusColor(status),
                                     fontSize: 10,
